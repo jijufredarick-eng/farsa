@@ -1,0 +1,1533 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { 
+  MapPin, 
+  Phone, 
+  Mail, 
+  Instagram, 
+  Facebook, 
+  Youtube, 
+  MessageCircle, 
+  ChevronRight, 
+  ChevronLeft, 
+  Star, 
+  Menu, 
+  X, 
+  ArrowRight, 
+  Award, 
+  Users, 
+  Utensils, 
+  Calendar, 
+  Clock, 
+  CheckCircle, 
+  Search, 
+  Filter, 
+  ExternalLink,
+  Sparkles,
+  ChevronDown,
+  Info
+} from 'lucide-react';
+
+const BRAND_DATA = {
+  name: "MALABAR CROWN",
+  fullName: "Malabar Crown Hospitality Group",
+  tagline: "Authentic Taste. Timeless Hospitality.",
+  established: 2004,
+  phone: "+91 490 234 8800",
+  whatsapp: "+91 98470 12345",
+  email: "concierge@malabarcrown.com",
+  address: "Crown Heights, Waterfront Promenade, Thalassery, Kerala 670101",
+  stats: [
+    { label: "Years of Culinary Mastery", value: "20+", icon: Award },
+    { label: "Signature Brands", value: "5", icon: Utensils },
+    { label: "Hospitality Team Members", value: "180+", icon: Users },
+    { label: "Happy Guests Served", value: "1.2M+", icon: CheckCircle }
+  ],
+  socials: {
+    instagram: "https://instagram.com",
+    facebook: "https://facebook.com",
+    youtube: "https://youtube.com",
+    whatsapp: "https://wa.me/919847012345"
+  }
+};
+
+const BRANDS = [
+  {
+    id: "crown-royal",
+    name: "Malabar Crown Royal Dining",
+    tagline: "Heritage Coastal & Royal Feasts",
+    category: "Fine Dining",
+    description: "Our flagship dining destination offering century-old royal Malabar recipes cooked in authentic brass cookware with freshly ground spice blends.",
+    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
+    location: "Thalassery Heritage Pier & Kochi Marina",
+    highlights: ["Private Dining Rooms", "Traditional Sadya Experience", "Live Sitar Evenings"],
+    hours: "12:00 PM - 11:00 PM Daily"
+  },
+  {
+    id: "aroma-co",
+    name: "Aroma & Co. Artisanal Cafe",
+    tagline: "Specialty Teas, Filter Coffee & Fusion Bakes",
+    category: "Cafe & Bistro",
+    description: "A serene coastal bistro serving custom single-origin Wayanad coffee, Malabar spiced brews, French pastries, and artisanal light bites.",
+    image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80",
+    location: "Calicut Beach Promenade & Bangalore",
+    highlights: ["Hand-poured Specialty Filter Coffee", "Outdoor Deck", "All-day Breakfast"],
+    hours: "08:00 AM - 10:30 PM Daily"
+  },
+  {
+    id: "charcoal-grill",
+    name: "The Charcoal & Clay Oven",
+    tagline: "Slow-Smoked Tandoor & Barbecue",
+    category: "Grill House",
+    description: "An energetic open-kitchen concept dedicated to tender tandoori cuts, slow-marinated kebabs, and authentic wood-fired clay oven delicacies.",
+    image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80",
+    location: "Dubai Marina & Kannur City",
+    highlights: ["Live Charcoal Pit", "Chef's Tasting Platters", "Signature Mint Chutney Bar"],
+    hours: "01:00 PM - 12:00 AM Daily"
+  },
+  {
+    id: "sea-breeze",
+    name: "Sea Breeze Coastal Deck",
+    tagline: "Fresh Seafood & Sunset Dining",
+    category: "Seafood Specialty",
+    description: "Directly overlooking the Arabian ocean, experience the day's fresh ocean catch prepared with coconut milk, raw mango, and freshly crushed pepper.",
+    image: "https://images.unsplash.com/photo-1537047902294-62a40c20a6ae?auto=format&fit=crop&w=1200&q=80",
+    location: "Bekal Fort Deck & Waterfront Thalassery",
+    highlights: ["Catch of the Day Display", "Sunset Deck Tables", "Banana Leaf Seafood Grill"],
+    hours: "12:30 PM - 11:00 PM Daily"
+  }
+];
+
+const MENU_CATEGORIES = ["All", "Starters", "Main Course", "Biriyani", "Seafood", "Grills", "Desserts", "Beverages"];
+
+const MENU_ITEMS = [
+  {
+    id: 1,
+    name: "Malabar Royal Dum Biriyani",
+    category: "Biriyani",
+    price: "₹480",
+    description: "Fragrant Kaima rice layered with tender marinated chicken, caramelized onions, cashews, raisins, and sealed in slow dum dough.",
+    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80",
+    isSignature: true,
+    tag: "Chef's Special"
+  },
+  {
+    id: 2,
+    name: "Tiger Prawn Pepper Roast",
+    category: "Seafood",
+    price: "₹690",
+    description: "Jumbo ocean prawns tossed with black pepper, curry leaves, crushed shallots, and roasted kokum butter.",
+    image: "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=800&q=80",
+    isSignature: true,
+    tag: "Fresh Catch"
+  },
+  {
+    id: 3,
+    name: "Kuttanadan Duck Mappas",
+    category: "Main Course",
+    price: "₹590",
+    description: "Traditional backwater farm duck simmered gently in rich coconut cream, green chillies, coriander, and star anise.",
+    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80",
+    isSignature: false,
+    tag: "Must Try"
+  },
+  {
+    id: 4,
+    name: "Charcoal Tandoori Pomfret",
+    category: "Grills",
+    price: "₹720",
+    description: "Whole silver pomfret steeped in red chili yogurt marinade, smoked over clay charcoal and served with mint chutney.",
+    image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80",
+    isSignature: false,
+    tag: "Gluten Free"
+  },
+  {
+    id: 5,
+    name: "Kozhi Porichathu Basket",
+    category: "Starters",
+    price: "₹380",
+    description: "Crispy fried country chicken strips spiced with fennel, fried garlic cloves, and curry leaf crispies.",
+    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=800&q=80",
+    isSignature: false,
+    tag: "Popular"
+  },
+  {
+    id: 6,
+    name: "Elaneer Payasam & Gold Leaf",
+    category: "Desserts",
+    price: "₹290",
+    description: "Silky tender coconut pudding garnished with crushed pistachio, saffron threads, and edible gold leaf.",
+    image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80",
+    isSignature: true,
+    tag: "Heritage Dessert"
+  },
+  {
+    id: 7,
+    name: "Spiced Passion Fruit Kulukki",
+    category: "Beverages",
+    price: "₹190",
+    description: "Hand-shaken fresh passion fruit juice infused with bird's eye chili, sweet basil seeds, and crushed ice.",
+    image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80",
+    isSignature: false,
+    tag: "Refreshing"
+  },
+  {
+    id: 8,
+    name: "Alleppey Fish Curry with Appam",
+    category: "Seafood",
+    price: "₹540",
+    description: "King fish cooked in sour kokum and coconut milk gravy, served with fluffy lacy edge rice appams.",
+    image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=800&q=80",
+    isSignature: false,
+    tag: "Authentic"
+  }
+];
+
+const SERVICES = [
+  {
+    id: "weddings",
+    title: "Wedding Feasts & Banquets",
+    description: "Curated multi-course traditional Sadyas and grand international buffets with white-glove service for your special day.",
+    icon: "👑",
+    image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: "corporate",
+    title: "Corporate Galas & Summits",
+    description: "Sophisticated catering solutions for executive board luncheons, product launches, and annual corporate celebrations.",
+    icon: "💼",
+    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: "private",
+    title: "Private VIP Dining",
+    description: "Exclusive home chef takeovers, luxury yacht catering, and intimate family milestone gatherings with custom menus.",
+    icon: "🍷",
+    image: "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: "outdoor",
+    title: "Large Destination Events",
+    description: "Full-scale mobile outdoor kitchen setup capable of serving over 3,000 guests seamlessly with zero compromise on taste.",
+    icon: "⛺",
+    image: "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=800&q=80"
+  }
+];
+
+const GALLERY_ITEMS = [
+  { id: 1, category: "Food", title: "Royal Biriyani Presentation", image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=1000&q=80" },
+  { id: 2, category: "Restaurant", title: "Thalassery Heritage Dining Hall", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1000&q=80" },
+  { id: 3, category: "Events", title: "Grand Wedding Buffet Layout", image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1000&q=80" },
+  { id: 4, category: "Catering", title: "Live Charcoal Barbecue Station", image: "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1000&q=80" },
+  { id: 5, category: "Team", title: "Master Chefs Crafting Spices", image: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=1000&q=80" },
+  { id: 6, category: "Food", title: "Seafood Platter with Fresh Herbs", image: "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=1000&q=80" },
+  { id: 7, category: "Restaurant", title: "Sunset Ocean Deck Bar", image: "https://images.unsplash.com/photo-1537047902294-62a40c20a6ae?auto=format&fit=crop&w=1000&q=80" },
+  { id: 8, category: "Catering", title: "VIP Private Dining Setup", image: "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1000&q=80" }
+];
+
+const TESTIMONIALS = [
+  {
+    id: 1,
+    name: "Dr. Arvind Varma",
+    role: "Food Critic & Guest",
+    rating: 5,
+    text: "Malabar Crown sets the gold standard for hospitality in Kerala. The Dum Biriyani takes you back in time to the authentic royal kitchens, and the service is unmatched.",
+    location: "Thalassery Flagship"
+  },
+  {
+    id: 2,
+    name: "Meera & Siddharth Nair",
+    role: "Wedding Hosts",
+    rating: 5,
+    text: "Their catering division hosted our 1,200 guest wedding reception in Kochi. Every single guest complimented the freshness and rich flavor of the coastal spread!",
+    location: "Saffron Banquets"
+  },
+  {
+    id: 3,
+    name: "Kahlil Al-Maktoum",
+    role: "Frequent Diner",
+    rating: 5,
+    text: "The Charcoal & Clay Oven in Dubai Marina is my absolute favorite dining spot. The tandoori pomfret and warm cardamom tea are sublime.",
+    location: "Dubai Marina"
+  }
+];
+
+const LOCATIONS = [
+  {
+    id: "thalassery",
+    city: "Thalassery Flagship",
+    address: "Crown Heights, Waterfront Promenade, Thalassery, Kerala 670101",
+    hours: "11:30 AM - 11:00 PM",
+    phone: "+91 490 234 8800",
+    mapUrl: "https://maps.google.com",
+    tag: "Original Flagship"
+  },
+  {
+    id: "kochi",
+    city: "Kochi Marine Drive",
+    address: "Pier 4, Bayview Boulevard, Marine Drive, Kochi, Kerala 682031",
+    hours: "12:00 PM - 11:30 PM",
+    phone: "+91 484 290 1122",
+    mapUrl: "https://maps.google.com",
+    tag: "Waterfront Deck"
+  },
+  {
+    id: "calicut",
+    city: "Calicut Beach Promenade",
+    address: "Heritage Square, Beach Road, Kozhikode, Kerala 673001",
+    hours: "08:00 AM - 11:00 PM",
+    phone: "+91 495 276 5544",
+    mapUrl: "https://maps.google.com",
+    tag: "All-Day Bistro & Bakery"
+  },
+  {
+    id: "bangalore",
+    city: "Bangalore Indiranagar",
+    address: "100 Feet Road, 12th Main Corner, Indiranagar, Bengaluru 560038",
+    hours: "12:00 PM - 11:30 PM",
+    phone: "+91 80 4123 9900",
+    mapUrl: "https://maps.google.com",
+    tag: "Fine Dining & Lounge"
+  },
+  {
+    id: "dubai",
+    city: "Dubai Marina Promenade",
+    address: "Level 1, Yacht Club Tower, Dubai Marina, United Arab Emirates",
+    hours: "01:00 PM - 12:30 AM",
+    phone: "+971 4 399 8811",
+    mapUrl: "https://maps.google.com",
+    tag: "International Hub"
+  }
+];
+
+export default function App() {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeMenuCategory, setActiveMenuCategory] = useState("All");
+  const [selectedGalleryCategory, setSelectedGalleryCategory] = useState("All");
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [lightboxImage, setLightboxImage] = useState(null);
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [selectedBrandModal, setSelectedBrandModal] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [showWhatsappChat, setShowWhatsappChat] = useState(false);
+
+  // Form input states
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    subject: 'General Inquiry',
+    message: ''
+  });
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 40) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveTestimonial((prev) => (prev + 1) % TESTIMONIALS.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Filtered menu logic
+  const filteredMenuItems = useMemo(() => {
+    return MENU_ITEMS.filter(item => {
+      const matchesCategory = activeMenuCategory === "All" || item.category === activeMenuCategory;
+      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [activeMenuCategory, searchQuery]);
+
+  // Filtered gallery logic
+  const filteredGalleryItems = useMemo(() => {
+    if (selectedGalleryCategory === "All") return GALLERY_ITEMS;
+    return GALLERY_ITEMS.filter(item => item.category === selectedGalleryCategory);
+  }, [selectedGalleryCategory]);
+
+  const handleFormChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    setFormSubmitted(true);
+    setTimeout(() => {
+      setFormSubmitted(false);
+      setFormData({ name: '', phone: '', email: '', subject: 'General Inquiry', message: '' });
+      setBookingModalOpen(false);
+    }, 3000);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAF7F2] text-[#2B2623] font-sans selection:bg-[#C59B27] selection:text-white relative overflow-x-hidden">
+      
+      {/* Sticky Header */}
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? 'bg-[#181512]/95 backdrop-blur-md py-3 shadow-xl border-b border-[#D4AF37]/20 text-white' : 'bg-gradient-to-b from-black/80 via-black/40 to-transparent py-5 text-white'
+      }`}>
+        <div className="max-w-7xl mx-mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+          
+          {/* Logo */}
+          <a href="#home" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-full border-2 border-[#C59B27] bg-[#181512] flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+              <span className="text-[#C59B27] font-serif font-bold text-lg tracking-wider">MC</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-serif text-lg sm:text-xl font-bold tracking-widest text-white group-hover:text-[#C59B27] transition-colors">
+                MALABAR CROWN
+              </span>
+              <span className="text-[9px] uppercase tracking-[0.25em] text-[#C59B27] -mt-1 font-medium">
+                HOSPITALITY GROUP
+              </span>
+            </div>
+          </a>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-7 text-xs font-semibold uppercase tracking-widest">
+            <a href="#home" className="hover:text-[#C59B27] transition-colors py-1">Home</a>
+            <a href="#about" className="hover:text-[#C59B27] transition-colors py-1">About</a>
+            <a href="#brands" className="hover:text-[#C59B27] transition-colors py-1">Our Brands</a>
+            <a href="#menu" className="hover:text-[#C59B27] transition-colors py-1">Menu</a>
+            <a href="#catering" className="hover:text-[#C59B27] transition-colors py-1">Catering & Events</a>
+            <a href="#gallery" className="hover:text-[#C59B27] transition-colors py-1">Gallery</a>
+            <a href="#locations" className="hover:text-[#C59B27] transition-colors py-1">Locations</a>
+            <a href="#contact" className="hover:text-[#C59B27] transition-colors py-1">Contact</a>
+          </nav>
+
+          {/* Header Action Buttons */}
+          <div className="hidden sm:flex items-center gap-3">
+            <button 
+              onClick={() => setBookingModalOpen(true)}
+              className="bg-[#C59B27] hover:bg-[#B8860B] text-black font-bold text-xs uppercase tracking-widest px-5 py-2.5 rounded-sm transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2"
+            >
+              <span>Order / Reserve</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-2 rounded-md text-white hover:text-[#C59B27] focus:outline-none"
+            aria-label="Toggle Navigation Menu"
+          >
+            {mobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Drawer Menu */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 bg-[#12100E]/98 text-white flex flex-col justify-between p-6 pt-24 lg:hidden backdrop-blur-lg animate-in fade-in duration-200">
+          <nav className="flex flex-col gap-5 text-center text-base uppercase tracking-widest font-semibold font-serif">
+            <a href="#home" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#C59B27] py-1 border-b border-white/10">Home</a>
+            <a href="#about" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#C59B27] py-1 border-b border-white/10">About Us</a>
+            <a href="#brands" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#C59B27] py-1 border-b border-white/10">Our Brands</a>
+            <a href="#menu" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#C59B27] py-1 border-b border-white/10">Menu Showcase</a>
+            <a href="#catering" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#C59B27] py-1 border-b border-white/10">Catering & Events</a>
+            <a href="#gallery" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#C59B27] py-1 border-b border-white/10">Gallery</a>
+            <a href="#locations" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#C59B27] py-1 border-b border-white/10">Locations</a>
+            <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#C59B27] py-1 border-b border-white/10">Contact Us</a>
+          </nav>
+          
+          <div className="flex flex-col gap-3 pt-6">
+            <button 
+              onClick={() => { setMobileMenuOpen(false); setBookingModalOpen(true); }}
+              className="w-full bg-[#C59B27] text-black font-bold py-3 uppercase tracking-widest text-xs rounded shadow-lg"
+            >
+              Order Online / Table Reservation
+            </button>
+            <a 
+              href={BRAND_DATA.socials.whatsapp} 
+              target="_blank" 
+              rel="noreferrer"
+              className="w-full bg-[#25D366] text-white font-bold py-3 uppercase tracking-widest text-xs rounded text-center flex items-center justify-center gap-2"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>WhatsApp Direct Concierge</span>
+            </a>
+          </div>
+        </div>
+      )}
+
+      {}
+      <section id="home" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-black">
+        {/* Hero Background Image */}
+        <div className="absolute inset-0 z-0 scale-105 animate-pulse duration-[10000ms]">
+          <img 
+            src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=2000&q=80" 
+            alt="Malabar Crown Ambiance" 
+            className="w-full h-full object-cover object-center opacity-45"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#FAF7F2] via-black/60 to-black/80" />
+        </div>
+
+        {/* Hero Content */}
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center text-white pt-12 pb-20">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#C59B27]/40 bg-black/40 backdrop-blur-md text-[#C59B27] text-xs uppercase tracking-[0.2em] font-semibold mb-6">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>WELCOME TO {BRAND_DATA.fullName}</span>
+          </div>
+
+          <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.15] mb-6 drop-shadow-md">
+            A Taste That Brings <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F0E6D2] via-[#C59B27] to-[#E5C158]">
+              People Together
+            </span>
+          </h1>
+
+          <p className="max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-gray-300 font-light leading-relaxed mb-10">
+            Experience authentic coastal & royal Indian flavours, centuries of culinary heritage, warm hospitality, and unforgettable luxury dining moments.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a 
+              href="#brands" 
+              className="w-full sm:w-auto px-8 py-4 bg-[#C59B27] hover:bg-[#B8860B] text-black font-bold text-xs uppercase tracking-[0.18em] rounded-sm transition-all shadow-xl hover:shadow-2xl hover:-translate-y-0.5 flex items-center justify-center gap-2"
+            >
+              <span>EXPLORE OUR BRANDS</span>
+              <ArrowRight className="w-4 h-4" />
+            </a>
+            <a 
+              href="#contact" 
+              className="w-full sm:w-auto px-8 py-4 border border-white/30 hover:border-[#C59B27] bg-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase tracking-[0.18em] rounded-sm backdrop-blur-sm transition-all flex items-center justify-center gap-2"
+            >
+              <span>CONTACT US</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 text-white/60 hover:text-[#C59B27] transition-colors cursor-pointer">
+          <span className="text-[10px] uppercase tracking-[0.25em]">Scroll Down</span>
+          <ChevronDown className="w-4 h-4 animate-bounce" />
+        </div>
+      </section>
+
+      {}
+      <section id="about" className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          
+          {/* Left Column: Image Collage */}
+          <div className="lg:col-span-6 relative">
+            <div className="relative z-10 rounded-lg overflow-hidden shadow-2xl border-4 border-white">
+              <img 
+                src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1000&q=80" 
+                alt="Restaurant Dining Interior" 
+                className="w-full h-[380px] sm:h-[480px] object-cover hover:scale-105 transition-transform duration-700"
+              />
+            </div>
+            
+            {/* Secondary Floating Image */}
+            <div className="hidden sm:block absolute -bottom-10 -right-6 z-20 w-3/5 rounded-lg overflow-hidden shadow-2xl border-4 border-[#FAF7F2]">
+              <img 
+                src="https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=800&q=80" 
+                alt="Chef preparing dish" 
+                className="w-full h-[240px] object-cover hover:scale-105 transition-transform duration-700"
+              />
+            </div>
+
+            {/* Decorative Gold Frame Backdrop */}
+            <div className="absolute -top-6 -left-6 w-2/3 h-full border-2 border-[#C59B27]/30 rounded-lg -z-0 hidden sm:block" />
+          </div>
+
+          {/* Right Column: Story Text */}
+          <div className="lg:col-span-6 flex flex-col justify-center">
+            <div className="inline-flex items-center gap-2 text-[#C59B27] text-xs uppercase tracking-[0.25em] font-bold mb-3">
+              <span className="w-8 h-[2px] bg-[#C59B27]"></span>
+              <span>OUR STORY & HERITAGE</span>
+            </div>
+
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#181512] tracking-tight leading-tight mb-6">
+              Tradition, Authentic Taste & Timeless Hospitality
+            </h2>
+
+            <p className="text-gray-700 text-base leading-relaxed mb-4">
+              Founded over two decades ago along the scenic shores of Malabar, <strong>{BRAND_DATA.fullName}</strong> was born from a deep reverence for regional culinary roots and royal feast traditions. What began as a single coastal eatery has blossomed into a premier dining group revered across continents.
+            </p>
+
+            <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-8">
+              We hand-select artisanal spices directly from high-altitude Wayanad plantations, combine slow clay-pot cooking techniques with contemporary presentation, and deliver genuine warmth that turns every guest into family.
+            </p>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-y border-[#E5DEC9] mb-8">
+              {BRAND_DATA.stats.map((stat, idx) => (
+                <div key={idx} className="text-center sm:text-left">
+                  <span className="block font-serif text-2xl sm:text-3xl font-extrabold text-[#C59B27]">
+                    {stat.value}
+                  </span>
+                  <span className="text-[11px] uppercase tracking-wider text-gray-600 font-semibold leading-tight block mt-1">
+                    {stat.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div>
+              <a 
+                href="#brands" 
+                className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#181512] hover:bg-[#C59B27] text-white hover:text-black font-bold text-xs uppercase tracking-widest rounded-sm transition-all shadow-md"
+              >
+                <span>OUR PHILOSOPHY</span>
+                <ChevronRight className="w-4 h-4" />
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {}
+      <section id="brands" className="py-20 bg-[#181512] text-white relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-[#C59B27] text-xs uppercase tracking-[0.25em] font-bold block mb-2">
+              OUR CULINARY PORTFOLIO
+            </span>
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-4">
+              Explore Our Distinct Dining Brands
+            </h2>
+            <p className="text-gray-400 text-sm sm:text-base">
+              Each restaurant concept under our umbrella brings a unique aesthetic, specialized culinary focus, and memorable dining atmosphere.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
+            {BRANDS.map((brand) => (
+              <div 
+                key={brand.id}
+                className="group relative bg-[#231F1C] rounded-lg overflow-hidden border border-white/10 hover:border-[#C59B27]/50 transition-all duration-500 shadow-xl flex flex-col justify-between"
+              >
+                {/* Brand Image Header */}
+                <div className="relative h-64 sm:h-72 overflow-hidden">
+                  <img 
+                    src={brand.image} 
+                    alt={brand.name} 
+                    className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 brightness-90 group-hover:brightness-100"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#231F1C] via-transparent to-black/40" />
+                  
+                  <span className="absolute top-4 right-4 bg-[#C59B27] text-black font-bold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full shadow">
+                    {brand.category}
+                  </span>
+                </div>
+
+                {/* Brand Details */}
+                <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between -mt-8 relative z-10">
+                  <div>
+                    <h3 className="font-serif text-2xl font-bold text-white group-hover:text-[#C59B27] transition-colors mb-1">
+                      {brand.name}
+                    </h3>
+                    <span className="text-[#C59B27] text-xs font-medium tracking-wide block mb-4 italic">
+                      "{brand.tagline}"
+                    </span>
+                    <p className="text-gray-300 text-sm leading-relaxed mb-6">
+                      {brand.description}
+                    </p>
+
+                    {/* Highlights */}
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {brand.highlights.map((h, i) => (
+                        <span key={i} className="text-[11px] bg-white/5 border border-white/10 px-2.5 py-1 rounded text-gray-300">
+                          ✓ {h}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-white/10 flex items-center justify-between mt-auto text-xs">
+                    <div className="flex items-center gap-1.5 text-gray-400">
+                      <MapPin className="w-3.5 h-3.5 text-[#C59B27]" />
+                      <span className="truncate max-w-[200px]">{brand.location}</span>
+                    </div>
+
+                    <button 
+                      onClick={() => setSelectedBrandModal(brand)}
+                      className="text-[#C59B27] hover:text-white font-bold uppercase tracking-widest flex items-center gap-1 text-[11px] group-hover:translate-x-1 transition-transform"
+                    >
+                      <span>EXPLORE BRAND</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {}
+      <section id="menu" className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <span className="text-[#C59B27] text-xs uppercase tracking-[0.25em] font-bold block mb-2">
+            DISCOVER OUR FLAVOURS
+          </span>
+          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#181512] tracking-tight mb-4">
+            A Masterclass in Coastal Culinary Craft
+          </h2>
+          <p className="text-gray-600 text-sm sm:text-base">
+            Filter through our curated hand-picked delicacies made using authentic wood-fired clay techniques and pure cold-pressed oils.
+          </p>
+        </div>
+
+        {/* Filter Controls Bar */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-10">
+          
+          {/* Category Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 max-w-full no-scrollbar">
+            {MENU_CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveMenuCategory(cat)}
+                className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+                  activeMenuCategory === cat 
+                    ? 'bg-[#C59B27] text-black shadow-md' 
+                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative w-full md:w-64">
+            <input 
+              type="text" 
+              placeholder="Search dishes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-full text-xs focus:outline-none focus:border-[#C59B27] shadow-sm"
+            />
+            <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          </div>
+
+        </div>
+
+        {/* Menu Items Grid */}
+        {filteredMenuItems.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-lg border border-dashed border-gray-300">
+            <p className="text-gray-500 font-serif text-lg">No dishes found matching your selection.</p>
+            <button 
+              onClick={() => { setActiveMenuCategory("All"); setSearchQuery(""); }}
+              className="mt-3 text-xs uppercase font-bold text-[#C59B27] underline"
+            >
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+            {filteredMenuItems.map((dish) => (
+              <div 
+                key={dish.id} 
+                className="bg-white rounded-lg overflow-hidden border border-[#EBE5D8] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+              >
+                <div className="relative h-48 overflow-hidden bg-gray-100">
+                  <img 
+                    src={dish.image} 
+                    alt={dish.name} 
+                    className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+                  />
+                  {dish.tag && (
+                    <span className="absolute top-3 left-3 bg-[#181512] text-[#C59B27] text-[9px] uppercase font-extrabold tracking-widest px-2.5 py-1 rounded shadow">
+                      {dish.tag}
+                    </span>
+                  )}
+                  <span className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm text-[#C59B27] font-serif font-bold text-sm px-3 py-1 rounded-full shadow">
+                    {dish.price}
+                  </span>
+                </div>
+
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">
+                      {dish.category}
+                    </span>
+                    <h3 className="font-serif text-lg font-bold text-[#181512] mb-2 group-hover:text-[#C59B27] transition-colors">
+                      {dish.name}
+                    </h3>
+                    <p className="text-gray-600 text-xs leading-relaxed mb-4">
+                      {dish.description}
+                    </p>
+                  </div>
+
+                  <button 
+                    onClick={() => setBookingModalOpen(true)}
+                    className="w-full py-2 bg-[#FAF7F2] hover:bg-[#C59B27] hover:text-black text-[#181512] font-bold text-[11px] uppercase tracking-wider rounded border border-[#E5DEC9] transition-colors"
+                  >
+                    Order / Add To Table
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+      </section>
+
+      {}
+      <section className="py-16 bg-[#181512] text-white border-y border-[#C59B27]/30 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            
+            <div className="lg:col-span-6 relative">
+              <div className="rounded-lg overflow-hidden border-2 border-[#C59B27]/40 shadow-2xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=1200&q=80" 
+                  alt="Malabar Royal Dum Biriyani Signature Dish" 
+                  className="w-full h-[350px] sm:h-[450px] object-cover"
+                />
+              </div>
+              <span className="absolute -top-4 -left-4 bg-[#C59B27] text-black font-extrabold text-xs uppercase tracking-widest px-4 py-2 rounded shadow-lg">
+                👑 CROWN SIGNATURE
+              </span>
+            </div>
+
+            <div className="lg:col-span-6">
+              <span className="text-[#C59B27] text-xs uppercase tracking-[0.25em] font-bold block mb-2">
+                OUR CULINARY MASTERPIECE
+              </span>
+              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+                Malabar Royal Gold Dum Biriyani
+              </h2>
+              <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-6">
+                Prepared using short-grain fragrant Kaima rice sourced directly from Wayanad valleys, marinated tender farm chicken cooked for 4 hours in pure ghee, cardamom, cloves, and whole nutmeg. Sealed under dough crust in heavy brass handis for the ultimate dum aroma.
+              </p>
+
+              <div className="grid grid-cols-3 gap-4 mb-8 bg-white/5 p-4 rounded-lg border border-white/10 text-center">
+                <div>
+                  <span className="block text-[#C59B27] font-bold text-lg">4 Hours</span>
+                  <span className="text-[10px] uppercase text-gray-400 font-semibold">Slow Dum Process</span>
+                </div>
+                <div>
+                  <span className="block text-[#C59B27] font-bold text-lg">18 Spices</span>
+                  <span className="text-[10px] uppercase text-gray-400 font-semibold">House Secret Blend</span>
+                </div>
+                <div>
+                  <span className="block text-[#C59B27] font-bold text-lg">Pure Ghee</span>
+                  <span className="text-[10px] uppercase text-gray-400 font-semibold">Artisanal Dairy</span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <button 
+                  onClick={() => setBookingModalOpen(true)}
+                  className="px-8 py-3.5 bg-[#C59B27] hover:bg-[#B8860B] text-black font-bold text-xs uppercase tracking-widest rounded transition-all shadow-lg"
+                >
+                  ORDER SIGNATURE BIRIYANI
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {}
+      <section id="catering" className="py-20 lg:py-28 relative bg-[#12100E] text-white">
+        
+        {/* Event Background Image with Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2000&q=80" 
+            alt="Royal Wedding Banquet" 
+            className="w-full h-full object-cover opacity-20"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#12100E] via-[#12100E]/90 to-[#12100E]" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-[#C59B27] text-xs uppercase tracking-[0.25em] font-bold block mb-2">
+              CATERING & EVENTS
+            </span>
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+              Make Every Grand Occasion Memorable
+            </h2>
+            <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
+              From intimate VIP family dinners to grand 3,000-guest wedding receptions, our dedicated event management & master culinary team bring white-glove hospitality directly to your venue.
+            </p>
+          </div>
+
+          {/* Service Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {SERVICES.map((srv) => (
+              <div 
+                key={srv.id} 
+                className="bg-[#1C1815] rounded-lg p-6 border border-white/10 hover:border-[#C59B27] transition-all duration-300 group hover:-translate-y-1 shadow-lg flex flex-col justify-between"
+              >
+                <div>
+                  <div className="w-12 h-12 rounded-full bg-[#C59B27]/10 border border-[#C59B27] text-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    {srv.icon}
+                  </div>
+                  <h3 className="font-serif text-xl font-bold text-white mb-3 group-hover:text-[#C59B27] transition-colors">
+                    {srv.title}
+                  </h3>
+                  <p className="text-gray-400 text-xs leading-relaxed mb-6">
+                    {srv.description}
+                  </p>
+                </div>
+
+                <div className="rounded overflow-hidden h-28 relative">
+                  <img src={srv.image} alt={srv.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                  <div className="absolute inset-0 bg-black/30" />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA Banner */}
+          <div className="bg-gradient-to-r from-[#2B231A] via-[#1E1914] to-[#2B231A] border border-[#C59B27]/40 rounded-xl p-8 sm:p-10 text-center flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl">
+            <div className="text-left max-w-xl">
+              <h3 className="font-serif text-2xl font-bold text-white mb-1">Planning a Wedding or Special Gala?</h3>
+              <p className="text-gray-300 text-xs sm:text-sm">Speak with our Executive Event Director for personalized menu tasting and venue layout planning.</p>
+            </div>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setBookingModalOpen(true)}
+                className="px-6 py-3 bg-[#C59B27] hover:bg-[#B8860B] text-black font-bold text-xs uppercase tracking-widest rounded transition-all whitespace-nowrap"
+              >
+                PLAN YOUR EVENT
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {}
+      <section id="gallery" className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <span className="text-[#C59B27] text-xs uppercase tracking-[0.25em] font-bold block mb-2">
+            VISUAL GALLERY
+          </span>
+          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#181512] mb-4">
+            A Glimpse Into Our World
+          </h2>
+          <p className="text-gray-600 text-sm sm:text-base">
+            Moments, art, dishes, and celebration captured across our restaurants and catered luxury banquets.
+          </p>
+        </div>
+
+        {/* Gallery Filter Pills */}
+        <div className="flex justify-center flex-wrap gap-2 mb-10">
+          {["All", "Food", "Restaurant", "Events", "Catering", "Team"].map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedGalleryCategory(cat)}
+              className={`px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+                selectedGalleryCategory === cat 
+                  ? 'bg-[#181512] text-[#C59B27] shadow' 
+                  : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Gallery Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {filteredGalleryItems.map((item) => (
+            <div 
+              key={item.id}
+              onClick={() => setLightboxImage(item)}
+              className="group relative h-64 rounded-lg overflow-hidden cursor-pointer bg-black shadow-md border border-[#E5DEC9]"
+            >
+              <img 
+                src={item.image} 
+                alt={item.title} 
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                <span className="text-[#C59B27] text-[10px] uppercase font-bold tracking-widest">{item.category}</span>
+                <span className="text-white font-serif font-bold text-sm">{item.title}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {}
+      <section className="py-20 bg-[#181512] text-white relative">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+          
+          <span className="text-[#C59B27] text-xs uppercase tracking-[0.25em] font-bold block mb-3">
+            WHAT OUR GUESTS SAY
+          </span>
+
+          <div className="min-h-[260px] flex flex-col justify-center items-center">
+            {/* Stars */}
+            <div className="flex justify-center gap-1 text-[#C59B27] mb-6">
+              {[...Array(TESTIMONIALS[activeTestimonial].rating)].map((_, i) => (
+                <Star key={i} className="w-5 h-5 fill-[#C59B27]" />
+              ))}
+            </div>
+
+            {/* Review text */}
+            <blockquote className="font-serif text-lg sm:text-2xl md:text-3xl text-gray-200 italic leading-relaxed mb-8 max-w-3xl">
+              "{TESTIMONIALS[activeTestimonial].text}"
+            </blockquote>
+
+            {/* Author */}
+            <div>
+              <span className="block font-bold text-white text-base">
+                {TESTIMONIALS[activeTestimonial].name}
+              </span>
+              <span className="text-xs text-[#C59B27] uppercase tracking-wider">
+                {TESTIMONIALS[activeTestimonial].role} • {TESTIMONIALS[activeTestimonial].location}
+              </span>
+            </div>
+          </div>
+
+          {/* Dots Navigation */}
+          <div className="flex justify-center gap-3 mt-8">
+            {TESTIMONIALS.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveTestimonial(idx)}
+                aria-label={`Go to testimonial ${idx + 1}`}
+                className={`h-2.5 rounded-full transition-all ${
+                  activeTestimonial === idx ? 'w-8 bg-[#C59B27]' : 'w-2.5 bg-white/30'
+                }`}
+              />
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {}
+      <section id="locations" className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <span className="text-[#C59B27] text-xs uppercase tracking-[0.25em] font-bold block mb-2">
+            FIND OUR RESTAURANTS
+          </span>
+          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#181512] mb-4">
+            Visit Us Across the Globe
+          </h2>
+          <p className="text-gray-600 text-sm sm:text-base">
+            Each location offers convenient valet parking, waterfront views, and signature royal hospitality.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {LOCATIONS.map((loc) => (
+            <div 
+              key={loc.id} 
+              className="bg-white rounded-lg p-7 border border-[#E5DEC9] shadow-md hover:shadow-xl transition-all flex flex-col justify-between group"
+            >
+              <div>
+                <span className="bg-[#FAF7F2] text-[#C59B27] border border-[#E5DEC9] text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded inline-block mb-4">
+                  {loc.tag}
+                </span>
+
+                <h3 className="font-serif text-2xl font-bold text-[#181512] mb-3 group-hover:text-[#C59B27] transition-colors">
+                  {loc.city}
+                </h3>
+
+                <div className="flex flex-col gap-3 text-xs text-gray-600 mb-6">
+                  <div className="flex items-start gap-2.5">
+                    <MapPin className="w-4 h-4 text-[#C59B27] shrink-0 mt-0.5" />
+                    <span>{loc.address}</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <Clock className="w-4 h-4 text-[#C59B27] shrink-0" />
+                    <span>{loc.hours}</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <Phone className="w-4 h-4 text-[#C59B27] shrink-0" />
+                    <span>{loc.phone}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
+                <a 
+                  href={loc.mapUrl} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="flex-1 text-center py-2 bg-[#FAF7F2] hover:bg-[#C59B27] hover:text-black text-[#181512] font-bold text-[11px] uppercase tracking-wider rounded border border-[#E5DEC9] transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Directions</span>
+                </a>
+                <button 
+                  onClick={() => setBookingModalOpen(true)}
+                  className="flex-1 py-2 bg-[#181512] hover:bg-[#C59B27] text-white hover:text-black font-bold text-[11px] uppercase tracking-wider rounded transition-colors"
+                >
+                  Book Table
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {}
+      <section id="contact" className="py-20 bg-[#181512] text-white relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            
+            {/* Contact Details */}
+            <div className="lg:col-span-5 flex flex-col justify-between">
+              <div>
+                <span className="text-[#C59B27] text-xs uppercase tracking-[0.25em] font-bold block mb-2">
+                  LET'S CONNECT
+                </span>
+                <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6">
+                  Get in Touch With Our Concierge
+                </h2>
+                <p className="text-gray-400 text-sm leading-relaxed mb-8">
+                  Whether you have questions regarding table reservations, private event catering, media inquiries, or corporate partnerships, our hospitality concierge is at your service.
+                </p>
+
+                <div className="flex flex-col gap-6 text-sm text-gray-300">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded bg-[#C59B27]/10 border border-[#C59B27] flex items-center justify-center shrink-0">
+                      <MapPin className="w-5 h-5 text-[#C59B27]" />
+                    </div>
+                    <div>
+                      <span className="block font-bold text-white text-xs uppercase tracking-wider">Corporate Headquarters</span>
+                      <span className="text-xs text-gray-400">{BRAND_DATA.address}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded bg-[#C59B27]/10 border border-[#C59B27] flex items-center justify-center shrink-0">
+                      <Phone className="w-5 h-5 text-[#C59B27]" />
+                    </div>
+                    <div>
+                      <span className="block font-bold text-white text-xs uppercase tracking-wider">Central Phone & Helpline</span>
+                      <span className="text-xs text-gray-400">{BRAND_DATA.phone}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded bg-[#C59B27]/10 border border-[#C59B27] flex items-center justify-center shrink-0">
+                      <Mail className="w-5 h-5 text-[#C59B27]" />
+                    </div>
+                    <div>
+                      <span className="block font-bold text-white text-xs uppercase tracking-wider">Email Concierge</span>
+                      <span className="text-xs text-gray-400">{BRAND_DATA.email}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Social Channels */}
+              <div className="pt-8 border-t border-white/10 mt-8">
+                <span className="block font-bold text-xs uppercase tracking-widest text-gray-400 mb-4">
+                  Follow Our Culinary Journey
+                </span>
+                <div className="flex items-center gap-3">
+                  <a href={BRAND_DATA.socials.instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="w-10 h-10 rounded bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-[#C59B27] hover:border-[#C59B27] transition-all">
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                  <a href={BRAND_DATA.socials.facebook} target="_blank" rel="noreferrer" aria-label="Facebook" className="w-10 h-10 rounded bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-[#C59B27] hover:border-[#C59B27] transition-all">
+                    <Facebook className="w-5 h-5" />
+                  </a>
+                  <a href={BRAND_DATA.socials.youtube} target="_blank" rel="noreferrer" aria-label="YouTube" className="w-10 h-10 rounded bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-[#C59B27] hover:border-[#C59B27] transition-all">
+                    <Youtube className="w-5 h-5" />
+                  </a>
+                  <a href={BRAND_DATA.socials.whatsapp} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="w-10 h-10 rounded bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-[#C59B27] hover:border-[#C59B27] transition-all">
+                    <MessageCircle className="w-5 h-5" />
+                  </a>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Contact Form */}
+            <div className="lg:col-span-7 bg-[#201C19] p-8 sm:p-10 rounded-xl border border-white/10 shadow-2xl">
+              {formSubmitted ? (
+                <div className="text-center py-12 flex flex-col items-center justify-center">
+                  <CheckCircle className="w-16 h-16 text-[#C59B27] mb-4 animate-bounce" />
+                  <h3 className="font-serif text-2xl font-bold text-white mb-2">Message Received</h3>
+                  <p className="text-gray-300 text-sm max-w-md">Thank you for contacting Malabar Crown Hospitality Group. Our concierge team will reach out to you shortly.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleFormSubmit} className="flex flex-col gap-5">
+                  <h3 className="font-serif text-2xl font-bold text-white mb-2">Send Us a Direct Message</h3>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wider text-gray-400 font-bold mb-1.5">Your Name *</label>
+                      <input 
+                        type="text" 
+                        name="name"
+                        required
+                        value={formData.name}
+                        onChange={handleFormChange}
+                        placeholder="John Doe"
+                        className="w-full bg-[#141210] border border-white/15 rounded px-4 py-3 text-xs text-white focus:outline-none focus:border-[#C59B27]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wider text-gray-400 font-bold mb-1.5">Phone Number *</label>
+                      <input 
+                        type="tel" 
+                        name="phone"
+                        required
+                        value={formData.phone}
+                        onChange={handleFormChange}
+                        placeholder="+91 98765 43210"
+                        className="w-full bg-[#141210] border border-white/15 rounded px-4 py-3 text-xs text-white focus:outline-none focus:border-[#C59B27]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wider text-gray-400 font-bold mb-1.5">Email Address *</label>
+                      <input 
+                        type="email" 
+                        name="email"
+                        required
+                        value={formData.email}
+                        onChange={handleFormChange}
+                        placeholder="john@example.com"
+                        className="w-full bg-[#141210] border border-white/15 rounded px-4 py-3 text-xs text-white focus:outline-none focus:border-[#C59B27]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wider text-gray-400 font-bold mb-1.5">Inquiry Subject</label>
+                      <select 
+                        name="subject"
+                        value={formData.subject}
+                        onChange={handleFormChange}
+                        className="w-full bg-[#141210] border border-white/15 rounded px-4 py-3 text-xs text-white focus:outline-none focus:border-[#C59B27]"
+                      >
+                        <option value="General Inquiry">General Inquiry</option>
+                        <option value="Table Reservation">Table Reservation</option>
+                        <option value="Wedding & Event Catering">Wedding & Event Catering</option>
+                        <option value="Franchise & Business">Franchise & Business</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] uppercase tracking-wider text-gray-400 font-bold mb-1.5">Your Message *</label>
+                    <textarea 
+                      name="message"
+                      rows="4"
+                      required
+                      value={formData.message}
+                      onChange={handleFormChange}
+                      placeholder="Please let us know your preferred location, date, or event specifics..."
+                      className="w-full bg-[#141210] border border-white/15 rounded px-4 py-3 text-xs text-white focus:outline-none focus:border-[#C59B27]"
+                    ></textarea>
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    className="w-full py-4 bg-[#C59B27] hover:bg-[#B8860B] text-black font-extrabold text-xs uppercase tracking-widest rounded shadow-xl transition-all hover:shadow-2xl mt-2"
+                  >
+                    SEND MESSAGE TO CONCIERGE
+                  </button>
+                </form>
+              )}
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {}
+      <footer className="bg-[#0D0B0A] text-white pt-16 pb-12 border-t border-[#C59B27]/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-white/10">
+            
+            {/* Brand Intro Column */}
+            <div className="lg:col-span-4">
+              <a href="#home" className="flex items-center gap-3 mb-4">
+                <div className="w-9 h-9 rounded-full border border-[#C59B27] bg-[#181512] flex items-center justify-center">
+                  <span className="text-[#C59B27] font-serif font-bold text-sm">MC</span>
+                </div>
+                <span className="font-serif text-lg font-bold tracking-widest text-white">
+                  MALABAR CROWN
+                </span>
+              </a>
+              <p className="text-gray-400 text-xs leading-relaxed mb-6 max-w-sm">
+                Authentic coastal and royal Indian cuisine rooted in century-old traditions. Delivering warmth, unmatched quality, and memorable dining experiences across the globe.
+              </p>
+              <span className="text-[10px] uppercase tracking-widest text-[#C59B27] font-semibold block">
+                © 2026 {BRAND_DATA.fullName}. All Rights Reserved.
+              </span>
+            </div>
+
+            {/* Quick Navigation */}
+            <div className="lg:col-span-2">
+              <h4 className="font-serif font-bold text-sm text-[#C59B27] uppercase tracking-wider mb-4">Quick Links</h4>
+              <ul className="flex flex-col gap-2.5 text-xs text-gray-400">
+                <li><a href="#home" className="hover:text-white transition-colors">Home</a></li>
+                <li><a href="#about" className="hover:text-white transition-colors">Our Story</a></li>
+                <li><a href="#brands" className="hover:text-white transition-colors">Our Brands</a></li>
+                <li><a href="#menu" className="hover:text-white transition-colors">Menu Showcase</a></li>
+                <li><a href="#catering" className="hover:text-white transition-colors">Catering Services</a></li>
+              </ul>
+            </div>
+
+            {/* Experience */}
+            <div className="lg:col-span-3">
+              <h4 className="font-serif font-bold text-sm text-[#C59B27] uppercase tracking-wider mb-4">Our Locations</h4>
+              <ul className="flex flex-col gap-2.5 text-xs text-gray-400">
+                <li>Thalassery Heritage Flagship</li>
+                <li>Kochi Marine Promenade</li>
+                <li>Calicut Beachfront Bistro</li>
+                <li>Bangalore Indiranagar</li>
+                <li>Dubai Marina Promenade</li>
+              </ul>
+            </div>
+
+            {/* Newsletter */}
+            <div className="lg:col-span-3">
+              <h4 className="font-serif font-bold text-sm text-[#C59B27] uppercase tracking-wider mb-4">Join Our Royal Club</h4>
+              <p className="text-xs text-gray-400 mb-4">Subscribe for exclusive chef invitation tasting dinners and seasonal menu releases.</p>
+              <div className="flex gap-2">
+                <input 
+                  type="email" 
+                  placeholder="Your email address" 
+                  className="bg-white/5 border border-white/10 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C59B27] flex-1"
+                />
+                <button 
+                  onClick={() => alert("Thank you for joining our VIP Royal Club!")}
+                  className="px-3 py-2 bg-[#C59B27] text-black font-bold text-xs uppercase tracking-wider rounded"
+                >
+                  Join
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-4">
+            <p>Designed for production-ready luxury hospitality platforms.</p>
+            <div className="flex gap-6">
+              <a href="#home" className="hover:text-gray-300">Privacy Policy</a>
+              <a href="#home" className="hover:text-gray-300">Terms of Service</a>
+              <a href="#home" className="hover:text-gray-300">Cookie Preferences</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {}
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-[#181512]/95 backdrop-blur-md border-t border-[#C59B27]/30 p-2.5 sm:hidden flex items-center justify-between gap-3 shadow-2xl">
+        <button 
+          onClick={() => setBookingModalOpen(true)}
+          className="flex-1 py-2.5 bg-[#C59B27] text-black font-bold text-[11px] uppercase tracking-widest rounded shadow"
+        >
+          ORDER NOW
+        </button>
+        <a 
+          href={BRAND_DATA.socials.whatsapp} 
+          target="_blank" 
+          rel="noreferrer"
+          className="flex-1 py-2.5 bg-[#25D366] text-white font-bold text-[11px] uppercase tracking-widest rounded text-center flex items-center justify-center gap-1.5 shadow"
+        >
+          <MessageCircle className="w-3.5 h-3.5" />
+          <span>WHATSAPP</span>
+        </a>
+      </div>
+
+      {}
+      
+      {/* Reservation & Order Modal */}
+      {bookingModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#181512] text-white max-w-lg w-full rounded-xl p-6 sm:p-8 border border-[#C59B27]/40 relative shadow-2xl animate-in zoom-in-95 duration-200">
+            <button 
+              onClick={() => setBookingModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <h3 className="font-serif text-2xl font-bold text-white mb-2">Reserve a Table / Direct Order</h3>
+            <p className="text-gray-400 text-xs mb-6">Select your preferred venue and time. Our host will confirm within 15 minutes.</p>
+
+            <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
+              <div>
+                <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Select Location</label>
+                <select className="w-full bg-[#231F1C] border border-white/20 rounded p-2.5 text-xs text-white">
+                  {LOCATIONS.map(l => (
+                    <option key={l.id} value={l.city}>{l.city}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Guests</label>
+                  <select className="w-full bg-[#231F1C] border border-white/20 rounded p-2.5 text-xs text-white">
+                    <option>2 People</option>
+                    <option>4 People</option>
+                    <option>6 People</option>
+                    <option>8+ Group</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Time</label>
+                  <input type="time" defaultValue="19:30" className="w-full bg-[#231F1C] border border-white/20 rounded p-2.5 text-xs text-white" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Contact Phone</label>
+                <input type="tel" required placeholder="+91 98765 43210" className="w-full bg-[#231F1C] border border-white/20 rounded p-2.5 text-xs text-white" />
+              </div>
+
+              <button type="submit" className="w-full py-3 bg-[#C59B27] text-black font-extrabold text-xs uppercase tracking-widest rounded mt-2">
+                CONFIRM RESERVATION REQUEST
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Brand Details Modal */}
+      {selectedBrandModal && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#1C1815] text-white max-w-2xl w-full rounded-xl overflow-hidden border border-[#C59B27] relative shadow-2xl">
+            <div className="relative h-64">
+              <img src={selectedBrandModal.image} alt={selectedBrandModal.name} className="w-full h-full object-cover" />
+              <button 
+                onClick={() => setSelectedBrandModal(null)}
+                className="absolute top-4 right-4 bg-black/60 text-white rounded-full p-2 hover:bg-black"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 sm:p-8">
+              <span className="text-[#C59B27] font-bold text-xs uppercase tracking-widest">{selectedBrandModal.category}</span>
+              <h3 className="font-serif text-3xl font-bold mb-2">{selectedBrandModal.name}</h3>
+              <p className="text-gray-300 text-xs leading-relaxed mb-6">{selectedBrandModal.description}</p>
+              
+              <div className="flex flex-col gap-2 text-xs text-gray-400 mb-6 bg-black/30 p-4 rounded border border-white/10">
+                <div><strong>Locations:</strong> {selectedBrandModal.location}</div>
+                <div><strong>Hours:</strong> {selectedBrandModal.hours}</div>
+              </div>
+
+              <button 
+                onClick={() => { setSelectedBrandModal(null); setBookingModalOpen(true); }}
+                className="w-full py-3 bg-[#C59B27] text-black font-bold text-xs uppercase tracking-widest rounded"
+              >
+                BOOK AT THIS BRAND
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox Modal */}
+      {lightboxImage && (
+        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4" onClick={() => setLightboxImage(null)}>
+          <div className="relative max-w-4xl max-h-[90vh]" onClick={e => e.stopPropagation()}>
+            <img src={lightboxImage.image} alt={lightboxImage.title} className="max-w-full max-h-[80vh] rounded shadow-2xl object-contain mx-auto" />
+            <div className="text-center pt-4">
+              <span className="text-[#C59B27] text-xs font-bold uppercase tracking-widest">{lightboxImage.category}</span>
+              <h4 className="text-white font-serif text-xl font-bold">{lightboxImage.title}</h4>
+            </div>
+            <button onClick={() => setLightboxImage(null)} className="absolute -top-10 right-0 text-white hover:text-[#C59B27]">
+              <X className="w-8 h-8" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {}
+      {/* Floating WhatsApp Action Widget */}
+      <div className="fixed bottom-20 sm:bottom-8 right-4 sm:right-8 z-40 flex flex-col items-end">
+        {/* Quick Chat Popup */}
+        {showWhatsappChat && (
+          <div className="mb-3 w-80 bg-[#181512] text-white rounded-2xl shadow-2xl border border-[#25D366]/40 overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+            {/* Widget Header */}
+            <div className="bg-[#128C7E] p-4 flex items-center justify-between text-white">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-full bg-black/20 border border-white/30 flex items-center justify-center font-bold text-sm">
+                    MC
+                  </div>
+                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-[#128C7E] rounded-full"></span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm leading-tight">Malabar Crown Concierge</h4>
+                  <p className="text-[10px] text-emerald-100">Online • Replies in minutes</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowWhatsappChat(false)}
+                className="text-white/80 hover:text-white p-1"
+                aria-label="Close Chat Box"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Message Preview */}
+            <div className="p-4 bg-[#0B141A] text-xs flex flex-col gap-3">
+              <div className="bg-[#202C33] text-gray-200 p-3 rounded-xl rounded-tl-none max-w-[88%] border border-white/5 shadow">
+                <p className="font-semibold text-[#25D366] text-[10px] mb-1">Royal Hospitality Desk</p>
+                Hello! 👋 Welcome to Malabar Crown. How may we assist with your table reservation or event catering today?
+              </div>
+            </div>
+
+            {/* Direct WhatsApp Trigger Button */}
+            <div className="p-3 bg-[#181512] border-t border-white/10">
+              <a 
+                href="https://wa.me/919847012345?text=Hello%20Malabar%20Crown%20Concierge,%20I%20would%20like%20to%20inquire%20about%20reservations/catering." 
+                target="_blank" 
+                rel="noreferrer"
+                className="w-full py-2.5 px-3 bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold rounded-lg flex items-center justify-center gap-2 shadow transition-transform active:scale-95"
+              >
+                <MessageCircle className="w-4 h-4 fill-white" />
+                <span>Start Direct WhatsApp Chat</span>
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Floating Icon Trigger */}
+        <button
+          onClick={() => setShowWhatsappChat(!showWhatsappChat)}
+          aria-label="Open WhatsApp Chat Concierge"
+          className="relative group bg-[#25D366] hover:bg-[#20ba5a] text-white p-3.5 sm:p-4 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-white/20"
+        >
+          {/* Pulsing Outer Halo */}
+          <span className="absolute -inset-1 rounded-full bg-[#25D366]/40 animate-ping -z-10 pointer-events-none"></span>
+          
+          <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 fill-white text-[#25D366]" />
+
+          {/* Unread Alert Badge */}
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#181512]">
+            1
+          </span>
+
+          {/* Desktop Hover Label */}
+          <span className="absolute right-full mr-3 bg-[#181512] text-white text-[11px] font-semibold px-3 py-1.5 rounded-md whitespace-nowrap shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none hidden sm:block">
+            Chat with Concierge 💬
+          </span>
+        </button>
+      </div>
+
+    </div>
+  );
+}
